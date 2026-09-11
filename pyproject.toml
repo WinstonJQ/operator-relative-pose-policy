@@ -10,7 +10,7 @@ authors = [
 ]
 dependencies = [
     "dora-rs==0.4.1",
-    "forge-kinematics==1.0.1",
+    "forge-kinematics==2.0.0",
     "forge-msgs==1.0.1",
     "numpy>=2.0",
     "pyarrow>=15",
