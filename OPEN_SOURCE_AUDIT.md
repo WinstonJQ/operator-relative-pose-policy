@@ -31,7 +31,8 @@ package indexes.
 - A `detect-secrets` scan across all 43 historical Git blobs reports zero
   findings.
 - Private repository URLs and machine-specific paths are absent from the
-  current publishable tree (a `/home/...` path in README.md was removed).
+  current publishable tree (a machine-specific absolute path in README.md
+  was removed).
   Historical commits retain development provenance.
 - No file approaches GitHub's 100 MiB hard limit; the largest tracked file
   (`uv.lock`) is under 160 KiB.
