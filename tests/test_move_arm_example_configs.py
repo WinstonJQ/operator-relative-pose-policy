@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -20,9 +21,12 @@ def _workspace_root() -> Path:
         )
         if (skill / "profiles" / "mujoco" / "dataflow.yaml").is_file():
             return candidate
-    raise RuntimeError(
-        "cannot locate the PhyAgentOS Skill source; set FORGE_WORKSPACE_ROOT"
+    pytest.skip(
+        "PhyAgentOS Skill source not available; "
+        "set FORGE_WORKSPACE_ROOT to run workspace contract tests",
+        allow_module_level=True,
     )
+    raise AssertionError("unreachable")
 
 
 WORKSPACE_ROOT = _workspace_root()
