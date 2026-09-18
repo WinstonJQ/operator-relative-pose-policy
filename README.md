@@ -31,7 +31,8 @@ uv sync
 uv run forge-relative-motion-policy --config relative_pose_policy.yaml
 ```
 
-Configuration is intentionally limited to one kinematic group and exactly five fields:
+Configuration supports a single kinematic group (the original format, unchanged) or multiple
+groups. With no top-level `groups` key, the original single-group format applies:
 
 ```yaml
 group_name: arm
@@ -41,8 +42,28 @@ base_frame: base_link
 tip_frame: link6
 ```
 
-Relative `urdf_path` values resolve against the configuration file's directory. Unknown or missing
-configuration fields are rejected.
+When a top-level `groups` mapping is present, each key is a group name and each value holds exactly
+`joint_names`, `urdf_path`, `base_frame`, and `tip_frame`. All groups share one incoming `joint_state`
+stream; resolution dispatches on `group_name`:
+
+```yaml
+groups:
+  xlerobot_left_arm:
+    joint_names: [left_arm_shoulder_pan, left_arm_shoulder_lift, left_arm_elbow_flex, left_arm_wrist_flex, left_arm_wrist_roll]
+    urdf_path: ../assets/urdf/xlerobot_kinematics.urdf
+    base_frame: base_link
+    tip_frame: left_arm_tcp
+  xlerobot_right_arm:
+    joint_names: [right_arm_shoulder_pan, right_arm_shoulder_lift, right_arm_elbow_flex, right_arm_wrist_flex, right_arm_wrist_roll]
+    urdf_path: ../assets/urdf/xlerobot_kinematics.urdf
+    base_frame: base_link
+    tip_frame: right_arm_tcp
+```
+
+Mixing top-level single-group fields with `groups` is rejected, as are empty `groups`, duplicated or
+empty joint lists, joints shared between groups, and unknown fields. Relative `urdf_path` values
+resolve against the configuration file's directory in both formats. Unknown or missing configuration
+fields are rejected.
 
 ## Dora ports
 

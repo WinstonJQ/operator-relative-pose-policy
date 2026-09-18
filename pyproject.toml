@@ -1,6 +1,6 @@
 [project]
 name = "relative-pose-policy-node"
-version = "0.1.0"
+version = "0.2.0"
 description = "Standalone Forge Query policy node for resolving relative Cartesian poses."
 readme = "README.md"
 requires-python = ">=3.12"

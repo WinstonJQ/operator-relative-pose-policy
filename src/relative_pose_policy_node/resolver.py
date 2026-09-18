@@ -9,7 +9,7 @@ from typing import Any, Literal
 import numpy as np
 from forge_msgs import JointState, Pose
 
-from .config import RelativePosePolicyConfig
+from .config import MultiGroupRelativePosePolicyConfig, RelativePosePolicyConfig
 from .kinematics import ForgeKinematicsAdapter, ForwardKinematics, matrix_to_pose, pose_to_matrix
 from .state_cache import JointStateCache
 
@@ -202,7 +202,50 @@ class RelativePoseResolver:
         )
 
 
+class MultiGroupRelativePoseResolver:
+    """Resolve relative-pose commands across multiple kinematic groups.
+
+    Each group owns its own ``RelativePoseResolver`` (and therefore its own FK adapter),
+    but all groups share a single ``JointStateCache``. A single ``joint_state`` update
+    refreshes the shared cache once; resolution dispatches strictly by ``group_name`` and
+    never falls back to another group.
+    """
+
+    def __init__(
+        self,
+        config: MultiGroupRelativePosePolicyConfig,
+        *,
+        kinematics: Mapping[str, ForwardKinematics] | None = None,
+        state_cache: JointStateCache | None = None,
+        clock_ns: Callable[[], int] = time.monotonic_ns,
+    ) -> None:
+        self.config = config
+        shared_cache = state_cache or JointStateCache()
+        self._state_cache = shared_cache
+        self._clock_ns = clock_ns
+        self._resolvers: dict[str, RelativePoseResolver] = {}
+        for group_name, group_config in config.groups.items():
+            self._resolvers[group_name] = RelativePoseResolver(
+                group_config,
+                kinematics=(kinematics or {}).get(group_name),
+                state_cache=shared_cache,
+                clock_ns=clock_ns,
+            )
+
+    def update_joint_state(self, state: JointState, now_ns: int | None = None) -> None:
+        self._state_cache.update(state, self._clock_ns() if now_ns is None else now_ns)
+
+    def resolve(self, command: RelativePoseCommand) -> RelativePoseResolution:
+        resolver = self._resolvers.get(command.group_name)
+        if resolver is None:
+            raise RelativePoseResolutionError(
+                "MOTION_INVALID_GROUP", f"unknown group {command.group_name!r}"
+            )
+        return resolver.resolve(command)
+
+
 __all__ = [
+    "MultiGroupRelativePoseResolver",
     "RelativePoseCommand",
     "RelativePoseResolution",
     "RelativePoseResolutionError",

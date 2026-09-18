@@ -18,7 +18,12 @@ if _VENDORED_SRC is not None and _VENDORED_SRC not in sys.path:
     sys.path.insert(0, _VENDORED_SRC)
 
 
-from .config import RelativePosePolicyConfig, config_from_mapping, load_config
+from .config import (
+    MultiGroupRelativePosePolicyConfig,
+    RelativePosePolicyConfig,
+    config_from_mapping,
+    load_config,
+)
 from .query import (
     RELATIVE_DESCRIPTOR,
     RELATIVE_ENDPOINT_ID,
@@ -27,6 +32,7 @@ from .query import (
     RelativePoseQueryEndpoint,
 )
 from .resolver import (
+    MultiGroupRelativePoseResolver,
     RelativePoseCommand,
     RelativePoseResolution,
     RelativePoseResolutionError,
@@ -38,6 +44,8 @@ __all__ = [
     "RELATIVE_DESCRIPTOR",
     "RELATIVE_ENDPOINT_ID",
     "RELATIVE_OPERATION",
+    "MultiGroupRelativePosePolicyConfig",
+    "MultiGroupRelativePoseResolver",
     "RelativePosePolicyConfig",
     "RelativePosePolicyRunner",
     "RelativePoseCommand",

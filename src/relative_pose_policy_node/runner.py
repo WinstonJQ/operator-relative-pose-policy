@@ -17,10 +17,10 @@ from forge_tool.dora import (
     tool_message_to_envelope,
 )
 
-from .config import RelativePosePolicyConfig
+from .config import MultiGroupRelativePosePolicyConfig, RelativePosePolicyConfig
 from .endpoint_lease import EndpointLease
 from .query import RELATIVE_DESCRIPTOR, RelativePoseQueryEndpoint
-from .resolver import RelativePoseResolver
+from .resolver import MultiGroupRelativePoseResolver, RelativePoseResolver
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +29,9 @@ class RelativePosePolicyRunner:
     def __init__(
         self,
         node: Any,
-        config: RelativePosePolicyConfig,
+        config: RelativePosePolicyConfig | MultiGroupRelativePosePolicyConfig,
         *,
-        resolver: RelativePoseResolver | None = None,
+        resolver: RelativePoseResolver | MultiGroupRelativePoseResolver | None = None,
         endpoint: RelativePoseQueryEndpoint | None = None,
         endpoint_instance_id: str | None = None,
         clock: Callable[[], float] = time.monotonic,
@@ -41,7 +41,10 @@ class RelativePosePolicyRunner:
             raise ValueError("endpoint and resolver must refer to the same resolver instance")
         self.resolver = resolver or (endpoint.resolver if endpoint is not None else None)
         if self.resolver is None:
-            self.resolver = RelativePoseResolver(config)
+            if isinstance(config, MultiGroupRelativePosePolicyConfig):
+                self.resolver = MultiGroupRelativePoseResolver(config)
+            else:
+                self.resolver = RelativePoseResolver(config)
         self.endpoint = endpoint or RelativePoseQueryEndpoint(self.resolver)
         self.endpoint_instance_id = endpoint_instance_id or str(uuid.uuid4())
         self.clock = clock
@@ -109,7 +112,9 @@ class RelativePosePolicyRunner:
         return 0
 
 
-def run_relative_policy(config: RelativePosePolicyConfig) -> int:
+def run_relative_policy(
+    config: RelativePosePolicyConfig | MultiGroupRelativePosePolicyConfig,
+) -> int:
     from dora import Node
 
     node = Node()

@@ -21,6 +21,7 @@ from forge_tool import (
 from .config import RelativePosePolicyConfig
 from .kinematics import ForwardKinematics
 from .resolver import (
+    MultiGroupRelativePoseResolver,
     RelativePoseCommand,
     RelativePoseResolutionError,
     RelativePoseResolver,
@@ -105,7 +106,7 @@ class RelativePoseQueryEndpoint:
 
     def __init__(
         self,
-        resolver: RelativePoseResolver,
+        resolver: RelativePoseResolver | MultiGroupRelativePoseResolver,
         *,
         epoch_ms: Callable[[], int] = lambda: time.time_ns() // 1_000_000,
     ) -> None:
